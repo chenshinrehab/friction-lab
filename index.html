@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小小科學家：摩擦力實驗室</title>
+    <title>摩擦力實驗室：拉力大挑戰</title>
     <style>
         body {
             font-family: '微軟正黑體', sans-serif;
@@ -13,11 +13,12 @@
             align-items: center;
             margin: 0;
             padding: 20px;
+            color: #333;
         }
 
         h1 {
             color: #2c3e50;
-            text-shadow: 2px 2px 0px #badcff;
+            margin-bottom: 10px;
         }
 
         .container {
@@ -25,346 +26,515 @@
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 800px;
+            width: 850px;
             max-width: 95%;
-            text-align: center;
         }
 
-        /* 模擬區 */
-        .stage {
-            width: 100%;
-            height: 250px;
-            border: 3px solid #333;
-            border-radius: 8px;
+        /* --- 實驗舞台 --- */
+        .stage-container {
             position: relative;
+            width: 100%;
+            height: 280px;
+            border: 4px solid #333;
+            border-radius: 8px;
             overflow: hidden;
-            margin-bottom: 20px;
             background-color: #e0e0e0;
-            transition: background-image 0.5s;
+            margin-bottom: 20px;
         }
 
-        /* 地板材質樣式 */
-        .floor-ice {
-            background: linear-gradient(to bottom, #e3f2fd, #bbdefb);
-            border-bottom: 10px solid #90caf9;
+        /* 地板材質 */
+        .floor {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            transition: background 0.5s;
         }
-        .floor-wood {
-            background: repeating-linear-gradient(45deg, #deb887, #deb887 10px, #d2a679 10px, #d2a679 20px);
-            border-bottom: 10px solid #8b4513;
+        .floor-ice { background: linear-gradient(to bottom, #e3f2fd 60%, #90caf9 100%); }
+        .floor-wood { 
+            background: repeating-linear-gradient(45deg, #deb887, #deb887 10px, #d2a679 10px, #d2a679 20px); 
         }
-        .floor-sandpaper {
+        .floor-sandpaper { 
             background-color: #808080;
-            background-image: radial-gradient(#333 15%, transparent 16%), radial-gradient(#333 15%, transparent 16%);
-            background-size: 10px 10px;
-            border-bottom: 10px solid #444;
+            background-image: radial-gradient(#333 15%, transparent 16%);
+            background-size: 8px 8px;
         }
 
-        /* 滑塊 */
+        /* 方塊 */
         #block {
             width: 100px;
             height: 100px;
-            background-color: #ff6b6b;
-            border: 2px solid #c0392b;
+            background-color: #e74c3c;
+            border: 3px solid #c0392b;
             position: absolute;
-            bottom: 10px; /* 地板高度 */
-            left: 20px;
+            bottom: 20px; /* 地板高度 */
+            left: 50px;
             display: flex;
             justify-content: center;
             align-items: center;
             color: white;
             font-weight: bold;
+            font-size: 1.2rem;
             border-radius: 5px;
-            transition: width 0.3s, height 0.3s; /* 變形動畫 */
+            z-index: 2;
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.3);
+            transition: width 0.3s, height 0.3s, background-color 0.3s;
         }
 
-        /* 儀表板 */
-        .controls {
+        /* 繩子與拉力指示 */
+        #rope {
+            position: absolute;
+            height: 4px;
+            background-color: #555;
+            top: 50%; /* 相對於方塊 */
+            left: 100%;
+            width: 0px;
+            transform-origin: left center;
+        }
+        
+        #force-arrow {
+            position: absolute;
+            right: -10px;
+            top: -8px;
+            width: 0; 
+            height: 0; 
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-left: 15px solid #d35400;
+            display: none;
+        }
+
+        /* 摩擦力反向箭頭 */
+        #friction-arrow {
+            position: absolute;
+            left: -50px;
+            bottom: 10px;
+            height: 10px;
+            background: #27ae60;
             display: flex;
-            justify-content: space-around;
+            align-items: center;
+            color: white;
+            font-size: 12px;
+            white-space: nowrap;
+            padding-left: 5px;
+            transition: width 0.1s;
+            opacity: 0;
+            z-index: 1;
+        }
+        #friction-arrow::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: -5px;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-right: 10px solid #27ae60;
+        }
+
+        /* --- 控制面板 --- */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
             background-color: #fff3cd;
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
         }
 
         .control-group {
-            text-align: left;
-        }
-
-        label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        select, button {
-            padding: 8px 15px;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 4px 0 #219150;
-            transition: transform 0.1s;
-        }
-
-        button:active {
-            transform: translateY(4px);
-            box-shadow: none;
-        }
-
-        button:disabled {
-            background-color: #95a5a6;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
-
-        /* 結果顯示 */
-        .results {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-size: 1.2em;
-            color: #2c3e50;
-        }
-
-        .meter-box {
-            background: #ecf0f1;
-            padding: 10px 20px;
+            background: rgba(255,255,255,0.7);
+            padding: 10px;
             border-radius: 8px;
-            min-width: 150px;
         }
 
-        .highlight {
-            color: #e74c3c;
+        .control-title {
             font-weight: bold;
+            margin-bottom: 8px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
         }
 
-        /* 教學提示 */
-        .teacher-note {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border-radius: 8px;
-            font-size: 0.95em;
-            line-height: 1.6;
-            text-align: left;
-        }
-        
-        /* 接觸面積選項 */
-        .area-options {
+        /* 按鈕樣式 */
+        .btn-group {
             display: flex;
-            gap: 10px;
+            gap: 5px;
         }
-        .area-btn {
-            padding: 5px 10px;
-            border: 2px solid #ccc;
+        .btn {
+            flex: 1;
+            padding: 8px 5px;
+            border: 1px solid #bdc3c7;
             background: white;
+            border-radius: 4px;
             cursor: pointer;
-            border-radius: 5px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
         }
-        .area-btn.active {
+        .btn:hover { background: #f0f0f0; }
+        .btn.active {
+            background: #3498db;
+            color: white;
             border-color: #2980b9;
-            background-color: #d6eaf8;
-            font-weight: bold;
         }
 
+        /* 拉力滑桿區域 */
+        .force-control {
+            grid-column: 1 / -1;
+            background: #d6eaf8;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        input[type=range] {
+            width: 80%;
+            height: 15px;
+            cursor: pointer;
+            accent-color: #d35400;
+        }
+
+        /* --- 儀表板 --- */
+        .dashboard {
+            display: flex;
+            justify-content: space-around;
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .data-box {
+            text-align: center;
+        }
+        .data-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f1c40f;
+        }
+        .data-label {
+            font-size: 0.8rem;
+            color: #bdc3c7;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            background: #95a5a6;
+        }
+        .status-moving { background: #e74c3c; animation: pulse 1s infinite; }
+        .status-static { background: #27ae60; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        /* 重置按鈕 */
+        .reset-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            border: 1px solid #333;
+            padding: 5px 10px;
+            cursor: pointer;
+            z-index: 10;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>🧪 摩擦力實驗室</h1>
+    <h1>🚜 摩擦力實驗室：拉力大挑戰</h1>
 
     <div class="container">
-        <div id="stage" class="stage floor-wood">
-            <div id="block">10kg<br>方塊</div>
+        
+        <div class="stage-container">
+            <button class="reset-btn" onclick="resetSim()">🔄 重置位置</button>
+            <div id="floor" class="floor floor-wood"></div>
+            
+            <div id="block">
+                <span id="weight-text">10kg</span>
+                <div id="rope">
+                    <div id="force-arrow"></div>
+                </div>
+                <div id="friction-arrow">摩擦力</div>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="data-box">
+                <div class="data-label">目前狀態</div>
+                <div id="status-display" class="status-badge status-static">靜止</div>
+            </div>
+            <div class="data-box">
+                <div class="data-label">施加拉力 (牛頓)</div>
+                <div id="pull-val" class="data-value">0 N</div>
+            </div>
+            <div class="data-box">
+                <div class="data-label">最大靜摩擦力 (門檻)</div>
+                <div id="max-friction-val" class="data-value">0 N</div>
+            </div>
         </div>
 
         <div class="controls">
             <div class="control-group">
-                <label>1. 選擇地板材質：</label>
-                <select id="materialSelect" onchange="changeMaterial()">
-                    <option value="wood">木頭地板 (中等摩擦)</option>
-                    <option value="ice">光滑冰面 (摩擦力小)</option>
-                    <option value="sandpaper">粗糙砂紙 (摩擦力大)</option>
-                </select>
-            </div>
-
-            <div class="control-group">
-                <label>2. 接觸面積大小：</label>
-                <div class="area-options">
-                    <div class="area-btn active" onclick="changeArea('small')">小</div>
-                    <div class="area-btn" onclick="changeArea('medium')">中</div>
-                    <div class="area-btn" onclick="changeArea('large')">大</div>
+                <div class="control-title">1. 地板材質 (粗糙度)</div>
+                <div class="btn-group">
+                    <button class="btn" onclick="setMaterial('ice', this)">🧊 冰面</button>
+                    <button class="btn active" onclick="setMaterial('wood', this)">🪵 木板</button>
+                    <button class="btn" onclick="setMaterial('sandpaper', this)">⬛ 砂紙</button>
                 </div>
             </div>
 
             <div class="control-group">
-                <label>3. 開始實驗：</label>
-                <button id="pushBtn" onclick="pushBlock()">用力推一下！</button>
+                <div class="control-title">2. 物體重量 (正向力)</div>
+                <div class="btn-group">
+                    <button class="btn active" onclick="setWeight(10, this)">10kg</button>
+                    <button class="btn" onclick="setWeight(20, this)">20kg</button>
+                    <button class="btn" onclick="setWeight(30, this)">30kg</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-title">3. 接觸面積</div>
+                <div class="btn-group">
+                    <button class="btn active" onclick="setArea('small', this)">小</button>
+                    <button class="btn" onclick="setArea('medium', this)">中</button>
+                    <button class="btn" onclick="setArea('large', this)">大</button>
+                </div>
+            </div>
+
+            <div class="force-control">
+                <div class="control-title" style="font-size: 1.2rem; color: #d35400;">👇 請拖動滑桿來施力 👇</div>
+                <input type="range" id="force-slider" min="0" max="300" value="0" step="1">
             </div>
         </div>
 
-        <div class="results">
-            <div class="meter-box">
-                摩擦力大小：<span id="frictionVal" class="highlight">中等</span>
-            </div>
-            <div class="meter-box">
-                滑行距離：<span id="distanceVal" class="highlight">0</span> 公尺
-            </div>
+        <div style="background: #e8f6f3; padding: 15px; border-radius: 8px; font-size: 0.9rem; color: #16a085;">
+            <strong>👩‍🏫 老師的話：</strong>
+            <ol style="margin: 5px 0 0 20px;">
+                <li>慢慢拉動滑桿，觀察拉力要到達多少，物體才會開始移動？（這就是最大靜摩擦力）</li>
+                <li>把物體變重，需要的拉力會變大嗎？</li>
+                <li><strong>關鍵思考：</strong>改變「接觸面積」（大/中/小），需要的拉力會改變嗎？</li>
+            </ol>
         </div>
 
-        <div class="teacher-note">
-            <strong>💡 觀察重點：</strong>
-            <ul style="margin: 5px 0 0 20px;">
-                <li>試試看不同的材質，哪一種讓方塊停得最快？</li>
-                <li><strong>陷阱題：</strong>保持材質不變，只改變「接觸面積」（方塊站著或躺著），滑行的距離會改變嗎？為什麼？</li>
-            </ul>
-        </div>
     </div>
 
     <script>
+        // DOM 元素
         const block = document.getElementById('block');
-        const stage = document.getElementById('stage');
-        const pushBtn = document.getElementById('pushBtn');
-        const materialSelect = document.getElementById('materialSelect');
-        const frictionDisplay = document.getElementById('frictionVal');
-        const distanceDisplay = document.getElementById('distanceVal');
-        const areaBtns = document.querySelectorAll('.area-btn');
+        const floor = document.getElementById('floor');
+        const weightText = document.getElementById('weight-text');
+        const rope = document.getElementById('rope');
+        const forceArrow = document.getElementById('force-arrow');
+        const frictionArrow = document.getElementById('friction-arrow');
+        
+        const slider = document.getElementById('force-slider');
+        const pullValDisplay = document.getElementById('pull-val');
+        const maxFrictionDisplay = document.getElementById('max-friction-val');
+        const statusDisplay = document.getElementById('status-display');
 
-        // 物理參數
-        let frictionCoeff = 0.5; // 預設木頭
-        let currentArea = 'small';
-        let position = 20; // 起始位置
+        // 物理變數
+        let mass = 10;          // kg
+        let frictionCoeff = 0.4; // 預設木頭
+        let area = 'small';
+        
+        let positionX = 50;     // px
         let velocity = 0;
-        let isAnimating = false;
-        let animationId = null;
-
-        // 材質設定資料
+        let pullForce = 0;      // Newtons
+        let isMoving = false;
+        
+        // 常數 (簡化物理模型 g=10)
+        const g = 10; 
+        
+        // 材質設定
         const materials = {
-            ice: { coeff: 0.1, name: "極小", class: "floor-ice" },
-            wood: { coeff: 0.5, name: "中等", class: "floor-wood" },
-            sandpaper: { coeff: 0.9, name: "極大", class: "floor-sandpaper" }
+            ice: { k: 0.1, class: 'floor-ice' },
+            wood: { k: 0.4, class: 'floor-wood' },
+            sandpaper: { k: 0.8, class: 'floor-sandpaper' }
         };
 
-        // 改變材質
-        function changeMaterial() {
-            if(isAnimating) return;
-            const type = materialSelect.value;
-            
-            // 更新視覺
-            stage.className = `stage ${materials[type].class}`;
-            
-            // 更新數據
-            frictionCoeff = materials[type].coeff;
-            frictionDisplay.innerText = materials[type].name;
-            
-            resetBlock();
+        // --- 設定功能 ---
+
+        function setMaterial(type, btn) {
+            frictionCoeff = materials[type].k;
+            floor.className = `floor ${materials[type].class}`;
+            updateActiveBtn(btn);
+            updatePhysicsState();
         }
 
-        // 改變接觸面積
-        function changeArea(size) {
-            if(isAnimating) return;
-            currentArea = size;
+        function setWeight(val, btn) {
+            mass = val;
+            weightText.innerText = val + 'kg';
             
-            // 更新按鈕樣式
-            areaBtns.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            // 視覺上改變顏色深淺代表重量
+            const colors = {10: '#e74c3c', 20: '#c0392b', 30: '#922b21'};
+            block.style.backgroundColor = colors[val];
+            
+            updateActiveBtn(btn);
+            updatePhysicsState();
+        }
 
-            // 改變方塊形狀 (模擬接觸面積變化，但質量不變)
-            // 質量是 10kg，我們只是改變它的擺放方式 (寬x高)
-            if (size === 'small') {
+        function setArea(val, btn) {
+            area = val;
+            // 改變形狀，但不改變物理 (摩擦力不變)
+            if(val === 'small') {
                 block.style.width = '60px';
                 block.style.height = '140px';
-            } else if (size === 'medium') {
+            } else if (val === 'medium') {
                 block.style.width = '100px';
                 block.style.height = '100px';
             } else {
                 block.style.width = '160px';
-                block.style.height = '40px';
+                block.style.height = '50px';
             }
-            
-            resetBlock();
+            updateActiveBtn(btn);
+            // 注意：這裡不呼叫 updatePhysicsState，因為摩擦力與面積無關
         }
 
-        // 重置
-        function resetBlock() {
-            position = 20;
-            velocity = 0;
-            block.style.left = position + 'px';
-            distanceDisplay.innerText = '0';
+        function updateActiveBtn(clickedBtn) {
+            // 找到同層級的所有按鈕移除 active，再加給被點擊的
+            const siblings = clickedBtn.parentElement.children;
+            for(let btn of siblings) btn.classList.remove('active');
+            clickedBtn.classList.add('active');
         }
 
-        // 推動邏輯
-        function pushBlock() {
-            if (isAnimating) return;
+        // --- 物理核心 ---
+
+        function updatePhysicsState() {
+            // 計算最大靜摩擦力 = mu * N (N = mass * g)
+            const maxFriction = Math.round(frictionCoeff * mass * g);
+            maxFrictionDisplay.innerText = maxFriction + " N";
             
-            isAnimating = true;
-            pushBtn.disabled = true;
-            resetBlock();
+            // 這裡只有更新顯示數值，實際運動邏輯在 animationLoop
+        }
 
-            // 初始推力給予的速度 (假設推力固定)
-            velocity = 15; 
+        // 監聽滑桿
+        slider.addEventListener('input', (e) => {
+            pullForce = parseInt(e.target.value);
+            pullValDisplay.innerText = pullForce + " N";
+            
+            // 視覺化拉力箭頭
+            if(pullForce > 0) {
+                rope.style.width = (50 + pullForce/2) + 'px'; // 繩子拉長
+                forceArrow.style.display = 'block';
+            } else {
+                rope.style.width = '0px';
+                forceArrow.style.display = 'none';
+            }
+        });
 
-            lastTime = performance.now();
+        // 動畫循環 (每一幀計算位置)
+        let lastTime = performance.now();
+
+        function animate(time) {
+            const dt = (time - lastTime) / 1000; // 秒
+            lastTime = time;
+
+            // 1. 計算摩擦力極限
+            const maxFriction = frictionCoeff * mass * g;
+
+            // 2. 判斷運動狀態
+            // 簡化模型：只要 拉力 > 最大摩擦力，就開始加速
+            // 若 拉力 <= 最大摩擦力，如果已經在動，會有動摩擦力減速；如果靜止，則不動
+            
+            let frictionForce = 0;
+            let netForce = 0;
+
+            if (isMoving) {
+                // 動摩擦力 (這裡假設動摩擦係數 = 靜摩擦係數，適合小學生)
+                frictionForce = maxFriction;
+                
+                // 如果拉力小於動摩擦力，物體會減速
+                netForce = pullForce - frictionForce;
+                
+            } else {
+                // 靜止狀態
+                if (pullForce > maxFriction) {
+                    isMoving = true;
+                    statusDisplay.innerText = "移動中！";
+                    statusDisplay.className = "status-badge status-moving";
+                    // 剛開始動的一瞬間
+                    netForce = pullForce - maxFriction;
+                    frictionForce = maxFriction;
+                } else {
+                    // 拉不動
+                    isMoving = false;
+                    statusDisplay.innerText = "靜止";
+                    statusDisplay.className = "status-badge status-static";
+                    netForce = 0;
+                    velocity = 0;
+                    frictionForce = pullForce; // 靜摩擦力等於拉力
+                }
+            }
+
+            // 3. 視覺化摩擦力 (綠色箭頭)
+            if (frictionForce > 0) {
+                frictionArrow.style.width = (frictionForce / 2) + 'px'; // 比例尺
+                frictionArrow.style.opacity = 1;
+            } else {
+                frictionArrow.style.opacity = 0;
+            }
+
+            // 4. 牛頓第二運動定律 F=ma -> a = F/m
+            if (isMoving) {
+                const acceleration = netForce / mass;
+                velocity += acceleration * dt; // v = v0 + at
+
+                // 如果速度變負的 (例如拉力放掉，摩擦力讓它停下來)，就停止
+                if (velocity < 0) {
+                    velocity = 0;
+                    isMoving = false;
+                }
+
+                // 更新位置 (加上像素比例尺)
+                positionX += velocity * 5; 
+
+                // 邊界檢查
+                const containerWidth = document.querySelector('.stage-container').clientWidth;
+                const blockWidth = block.offsetWidth;
+                
+                if (positionX > containerWidth - blockWidth - 10) {
+                    positionX = containerWidth - blockWidth - 10;
+                    velocity = 0; // 撞牆停止
+                    // 強制重置滑桿，避免一直撞牆
+                    // slider.value = 0;
+                    // pullForce = 0;
+                    // pullValDisplay.innerText = "0 N";
+                }
+            }
+
+            // 更新畫面
+            block.style.left = positionX + 'px';
+
             requestAnimationFrame(animate);
         }
 
-        let lastTime = 0;
-
-        function animate(time) {
-            // 計算時間差
-            const deltaTime = (time - lastTime) / 1000; // 轉秒
-            lastTime = time;
-
-            if (deltaTime > 0.1) { // 避免切換分頁時跳動
-                 requestAnimationFrame(animate);
-                 return;
-            }
-
-            // 物理計算: 減速度 = 摩擦係數 * 重力 (簡化版)
-            // F = ma, f = uN = umg -> ma = umg -> a = ug
-            const gravity = 9.8;
-            const deceleration = frictionCoeff * gravity * 3; // *3 是為了讓動畫在螢幕範圍內好看一點
-
-            // 更新速度
-            velocity -= deceleration * deltaTime;
-
-            // 如果速度還大於0，繼續移動
-            if (velocity > 0) {
-                position += velocity * 5; // *5 是像素比例尺
-                
-                // 邊界檢查 (不要跑出舞台)
-                if (position > stage.clientWidth - block.offsetWidth) {
-                    position = stage.clientWidth - block.offsetWidth;
-                    velocity = 0;
-                }
-
-                block.style.left = position + 'px';
-                
-                // 更新距離顯示 (假裝計算真實距離)
-                let visualDistance = (position - 20) / 50; // 換算成公尺
-                distanceDisplay.innerText = visualDistance.toFixed(2);
-
-                requestAnimationFrame(animate);
-            } else {
-                // 停止
-                isAnimating = false;
-                pushBtn.disabled = false;
-            }
+        function resetSim() {
+            positionX = 50;
+            velocity = 0;
+            isMoving = false;
+            slider.value = 0;
+            pullForce = 0;
+            pullValDisplay.innerText = "0 N";
+            rope.style.width = '0px';
+            updatePhysicsState();
         }
 
         // 初始化
-        changeMaterial();
+        setMaterial('wood', document.querySelectorAll('.btn-group')[0].children[1]); // 預設 active 的按鈕
+        setWeight(10, document.querySelectorAll('.btn-group')[1].children[0]);
+        setArea('small', document.querySelectorAll('.btn-group')[2].children[0]);
+        updatePhysicsState();
+        requestAnimationFrame(animate);
+
     </script>
 </body>
 </html>
